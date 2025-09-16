@@ -3,9 +3,8 @@ package service;
 import model.Student;
 
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+
 
 import static java.util.stream.Collectors.toSet;
 import static mock.data.StudentMockData.STUDENTS;

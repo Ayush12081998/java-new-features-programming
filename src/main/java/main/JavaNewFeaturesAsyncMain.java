@@ -2,16 +2,67 @@ package main;
 
 import service.AsyncComputationService;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.concurrent.*;
 
 public class JavaNewFeaturesAsyncMain {
 
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         AsyncComputationService asyncComputationService = new AsyncComputationService();
-//        Future<String> result = asyncComputationService.demonstrateUsageOfCompletableFutureAsFuture();
-//        asyncComputationService.demonstrateSupplyAsync();
-//        System.out.println(result.get());
+        Future<String> result = asyncComputationService.demonstrateUsageOfCompletableFutureAsFuture();
+        asyncComputationService.demonstrateSupplyAsync();
+        System.out.println(result.get());
         executors();
+//        fileTestRaceCondition();
+    }
+
+    static void fileTestRaceCondition() throws InterruptedException {
+        String content1="content1";
+        String content2="content2";
+        Thread t1=new Thread(()->{
+            // Get system temp directory
+            String tempDir = System.getProperty("java.io.tmpdir");
+
+            // Create the file object with temp path + file name
+            File file = new File(tempDir, "abc.txt");
+            try {
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                    writer.write(content1);
+                    System.out.println("File written to: " + file.getAbsolutePath());
+                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+                }
+                Thread.sleep(1000);
+                System.out.println(Files.readAllLines(file.toPath()));
+            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+            } catch (IOException e) {
+//                throw new RuntimeException(e);
+            }
+        });
+
+        Thread t2=new Thread(()->{
+            // Get system temp directory
+            String tempDir = System.getProperty("java.io.tmpdir");
+
+            // Create the file object with temp path + file name
+            File file = new File(tempDir, "abc.txt");
+
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                    writer.write(content2);
+                    System.out.println("T2 File written to: " + file.getAbsolutePath());
+                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+                }
+
+        });
+
+        t1.start();
+        t2.start();
     }
 
     static void executors(){
